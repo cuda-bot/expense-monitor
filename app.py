@@ -4,8 +4,7 @@ from flask_login import LoginManager, login_user, login_required, logout_user, U
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Response
 from flask_login import current_user
-@app.route('/export/pdf')
-@login_required
+
 
 import sqlite3
 import os
@@ -167,7 +166,8 @@ def export_csv():
         mimetype='text/csv',
         headers={"Content-Disposition": "attachment;filename=expenses.csv"}
     )
-
+@app.route('/export/pdf')
+@login_required
 
 def export_pdf():
     from reportlab.lib.pagesizes import letter
