@@ -53,14 +53,34 @@
           <th>Category</th>
           <th>Amount (₹)</th>
           <th>Date</th>
+        
+        <td>
+          <a href="/edit/{{ e[0] }}" class="btn btn-sm btn-warning me-1">Edit</a>
+          <form method="post" action="/delete/{{ e[0] }}" style="display:inline;" onsubmit="return confirm('Are you sure?')">
+            <button class="btn btn-sm btn-danger">Delete</button>
+          </form>
+        </td>
         </tr>
       </thead>
+      <th>Action</th>
       <tbody>
         {% for e in expenses %}
+        <td>
+          <form method="post" action="/delete/{{ e[0] }}" onsubmit="return confirm('Are you sure?')">
+            <button class="btn btn-sm btn-danger">Delete</button>
+          </form>
+        </td>
         <tr>
           <td>{{ e[1] }}</td>
           <td>{{ e[2] }}</td>
           <td>{{ e[3] }}</td>
+        
+        <td>
+          <a href="/edit/{{ e[0] }}" class="btn btn-sm btn-warning me-1">Edit</a>
+          <form method="post" action="/delete/{{ e[0] }}" style="display:inline;" onsubmit="return confirm('Are you sure?')">
+            <button class="btn btn-sm btn-danger">Delete</button>
+          </form>
+        </td>
         </tr>
         {% endfor %}
       </tbody>
