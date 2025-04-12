@@ -1,11 +1,6 @@
-
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, Response
 from flask_login import LoginManager, login_user, login_required, logout_user, UserMixin, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import Response
-from flask_login import current_user
-
-
 import sqlite3
 import os
 
@@ -93,14 +88,25 @@ def logout():
 @login_required
 def index():
     selected_category = request.args.get('category', 'All')
+    from_date = request.args.get('from')
+    to_date = request.args.get('to')
+
     conn = sqlite3.connect('expenses.db')
     c = conn.cursor()
 
-    if selected_category == 'All':
-        c.execute('SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC', (current_user.id,))
-    else:
-        c.execute('SELECT * FROM expenses WHERE user_id = ? AND category = ? ORDER BY date DESC',
-                  (current_user.id, selected_category))
+    query = 'SELECT * FROM expenses WHERE user_id = ?'
+    params = [current_user.id]
+
+    if selected_category != 'All':
+        query += ' AND category = ?'
+        params.append(selected_category)
+
+    if from_date and to_date:
+        query += ' AND date BETWEEN ? AND ?'
+        params.extend([from_date, to_date])
+
+    query += ' ORDER BY date DESC'
+    c.execute(query, tuple(params))
     data = c.fetchall()
 
     c.execute('SELECT DISTINCT category FROM expenses WHERE user_id = ?', (current_user.id,))
@@ -137,13 +143,6 @@ def index():
         chart_values=amounts_for_chart
     )
 
-if __name__ == '__main__':
-    init_db()
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host='0.0.0.0', port=port)
-
-
-
 @app.route('/export/csv')
 @login_required
 def export_csv():
@@ -166,9 +165,9 @@ def export_csv():
         mimetype='text/csv',
         headers={"Content-Disposition": "attachment;filename=expenses.csv"}
     )
+
 @app.route('/export/pdf')
 @login_required
-
 def export_pdf():
     from reportlab.lib.pagesizes import letter
     from reportlab.pdfgen import canvas
@@ -197,3 +196,8 @@ def export_pdf():
         mimetype='application/pdf',
         headers={"Content-Disposition": "attachment;filename=expenses.pdf"}
     )
+
+if __name__ == '__main__':
+    init_db()
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
